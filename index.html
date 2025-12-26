@@ -1,124 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Christmas Impostor Game</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to bottom, #8ED1FC, #FFF);
-            color: #222;
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            color: #D32F2F;
-            text-shadow: 2px 2px #fff;
-        }
-        #player-section {
-            margin: 20px 0;
-        }
-        .player-card {
-            background: #fff3e0;
-            border: 2px solid #D32F2F;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 15px auto;
-            width: 300px;
-            box-shadow: 2px 2px 12px rgba(0,0,0,0.2);
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            background-color: #D32F2F;
-            color: white;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #B71C1C;
-        }
-        .revealed-word {
-            margin-top: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #388E3C;
-        }
-        footer {
-            margin-top: 40px;
-            font-size: 12px;
-            color: #555;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>🎄 Christmas Impostor Game 🎄</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #8ED1FC, #FFF);
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .card {
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 15px;
+      width: 340px;
+      text-align: center;
+      box-shadow: 2px 2px 15px rgba(0,0,0,0.3);
+      margin: 10px;
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background: #D32F2F;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button.secondary {
+      background: #388E3C;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .hidden {
+      display: none;
+    }
+    h2 {
+      color: #B71C1C;
+      text-shadow: 1px 1px #fff;
+    }
+    /* Christmas decorations */
+    body::before {
+      content: "🎄✨🎁🎅";
+      font-size: 40px;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
 </head>
 <body>
-    <h1>🎄 Christmas Impostor Game 🎄</h1>
-    <p>Press "Reveal" to see your secret role. Hand the phone to the next player after viewing!</p>
 
-    <div id="player-section"></div>
+<div class="card" id="setup">
+  <h2>🎄 Christmas Impostor Game 🎄</h2>
+  <p>Player names (comma separated)</p>
+  <input id="names" placeholder="Alex, Sam, Jordan">
+  <button onclick="startRound()">Start Round</button>
+</div>
 
-    <button id="resetBtn">Reset Game</button>
+<div class="card hidden" id="reveal">
+  <h2 id="playerName"></h2>
 
-    <footer>Created with festive cheer!</footer>
+  <div id="hiddenRole">
+    <p>Tap when you're alone</p>
+    <button onclick="revealRole()">Reveal Role</button>
+  </div>
 
-    <script>
-        const words = [
-            "Beeba","Pierr","Dodo","Pola","Steven","Bavly","Leo","Baher","Petro",
-            "Teo","Doris","Jessy","Christine","Karol","Heaven","Tia","Maureen",
-            "Clara","Julie","Tutu","Ben","Nathalie","Buckets","Younan","Wella","Cyril M","Soso"
-        ];
+  <div id="shownRole" class="hidden">
+    <p id="roleText"></p>
+    <button class="secondary" onclick="hideAndPass()">Hide & Pass</button>
+  </div>
+</div>
 
-        let roles = [];
+<div class="card hidden" id="done">
+  <h2>Round Ready</h2>
+  <p>Discuss and find the impostor!</p>
+  <button onclick="startRound()">Next Round</button>
+</div>
 
-        function shuffleArray(array) {
-            let arr = array.slice();
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
+<script>
+  // WORD POOL (no repeats)
+  let secretWords = [
+    "Beeba","Pierr","Dodo","Pola","Steven","Bavly","Leo","Baher",
+    "Petro","Teo","Doris","Jessy","Christine","Karol","Heaven",
+    "Tia","Maureen","Clara","Julie","Tutu","Ben","Nathalie",
+    "Buckets","Younan","Wella","Cyril M","Soso"
+  ];
 
-        function createRoles() {
-            // Randomly pick one impostor
-            const impostorIndex = Math.floor(Math.random() * words.length);
-            roles = words.map((word, index) => {
-                return index === impostorIndex ? "IMPOSTOR" : word;
-            });
-            roles = shuffleArray(roles);
-        }
+  let remainingWords = [];
 
-        function createPlayers() {
-            createRoles();
-            const section = document.getElementById("player-section");
-            section.innerHTML = "";
-            roles.forEach((role, index) => {
-                const card = document.createElement("div");
-                card.className = "player-card";
-                card.innerHTML = `
-                    <p>Player ${index + 1}</p>
-                    <button onclick="revealRole(this, '${role}')">Reveal</button>
-                    <div class="revealed-word" style="display:none;"></div>
-                `;
-                section.appendChild(card);
-            });
-        }
+  let players = [];
+  let impostorIndex = 0;
+  let currentPlayer = 0;
+  let currentWord = "";
 
-        function revealRole(button, role) {
-            const roleDiv = button.nextElementSibling;
-            roleDiv.textContent = role;
-            roleDiv.style.display = "block";
-            button.disabled = true;
-        }
+  function startRound() {
+    if (players.length === 0) {
+      players = document.getElementById("names").value
+        .split(",")
+        .map(n => n.trim())
+        .filter(n => n);
 
-        document.getElementById("resetBtn").addEventListener("click", createPlayers);
+      if (players.length < 3) {
+        alert("Need at least 3 players");
+        return;
+      }
+    }
 
-        // Initialize game
-        createPlayers();
-    </script>
+    // refill words when empty
+    if (remainingWords.length === 0) {
+      remainingWords = [...secretWords];
+    }
+
+    // pick & remove word
+    const wordIndex = Math.floor(Math.random() * remainingWords.length);
+    currentWord = remainingWords.splice(wordIndex, 1)[0];
+
+    impostorIndex = Math.floor(Math.random() * players.length);
+    currentPlayer = 0;
+
+    document.getElementById("setup").classList.add("hidden");
+    document.getElementById("done").classList.add("hidden");
+    document.getElementById("reveal").classList.remove("hidden");
+
+    resetReveal();
+    showPlayer();
+  }
+
+  function showPlayer() {
+    document.getElementById("playerName").innerText =
+      players[currentPlayer];
+  }
+
+  function revealRole() {
+    document.getElementById("hiddenRole").classList.add("hidden");
+    document.getElementById("shownRole").classList.remove("hidden");
+
+    if (currentPlayer === impostorIndex) {
+      document.getElementById("roleText").innerText =
+        "You are the IMPOSTOR 🤫";
+    } else {
+      document.getElementById("roleText").innerText =
+        "The word is: " + currentWord;
+    }
+  }
+
+  function hideAndPass() {
+    currentPlayer++;
+
+    if (currentPlayer >= players.length) {
+      document.getElementById("reveal").classList.add("hidden");
+      document.getElementById("done").classList.remove("hidden");
+    } else {
+      resetReveal();
+      showPlayer();
+    }
+  }
+
+  function resetReveal() {
+    document.getElementById("hiddenRole").classList.remove("hidden");
+    document.getElementById("shownRole").classList.add("hidden");
+    document.getElementById("roleText").innerText = "";
+  }
+</script>
+
 </body>
 </html>
-
