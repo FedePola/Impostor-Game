@@ -44,72 +44,7 @@
 
 <div class="card" id="setup">
   <h2>Impostor Game</h2>
-  <p>Players</p>
-  <input id="names" value="Beeba, Pierr, Dodo, Pola, Steven, Bavly, Leo, Baher, Petro, Teo, Doris, Jessy, Christine, Karol, Heaven, Tia, Maureen, Clara, Julie, Tutu, Ben, Nathalie, Buckets, Younan, Wella, Cyril M">
-  <p>Secret word</p>
-  <input id="word" placeholder="Enter secret word">
-  <button onclick="startGame()">Start Game</button>
-</div>
+  <p>Play
 
-<div class="card hidden" id="reveal">
-  <h2 id="playerName"></h2>
-  <p id="roleText"></p>
-  <button onclick="nextPlayer()">Next</button>
-</div>
-
-<div class="card hidden" id="done">
-  <h2>All roles given</h2>
-  <p>Discuss and find the impostor!</p>
-</div>
-
-<script>
-  let players = [];
-  let impostorIndex = 0;
-  let currentPlayer = 0;
-  let secretWord = "";
-
-  function startGame() {
-    players = document.getElementById("names").value
-      .split(",")
-      .map(n => n.trim())
-      .filter(n => n);
-
-    secretWord = document.getElementById("word").value;
-
-    if (players.length < 3 || !secretWord) {
-      alert("Need at least 3 players and a word");
-      return;
-    }
-
-    impostorIndex = Math.floor(Math.random() * players.length);
-    document.getElementById("setup").classList.add("hidden");
-    document.getElementById("reveal").classList.remove("hidden");
-    showPlayer();
-  }
-
-  function showPlayer() {
-    document.getElementById("playerName").innerText =
-      players[currentPlayer];
-
-    if (currentPlayer === impostorIndex) {
-      document.getElementById("roleText").innerText =
-        "You are the IMPOSTOR 🤫";
-    } else {
-      document.getElementById("roleText").innerText =
-        "The word is: " + secretWord;
-    }
-  }
-
-  function nextPlayer() {
-    currentPlayer++;
-    if (currentPlayer >= players.length) {
-      document.getElementById("reveal").classList.add("hidden");
-      document.getElementById("done").classList.remove("hidden");
-    } else {
-      showPlayer();
-    }
-  }
-</script>
-
-</body>
-</html>
+  
+  
