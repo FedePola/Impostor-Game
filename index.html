@@ -1,125 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Impostor Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .card {
-      background: #1e1e1e;
-      padding: 20px;
-      border-radius: 10px;
-      width: 340px;
-      text-align: center;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      background: #4caf50;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #43a047;
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Secret Word Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #8ED1FC, #FFF);
+            color: #222;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #D32F2F;
+            text-shadow: 2px 2px #fff;
+        }
+        #player-section {
+            margin: 20px 0;
+        }
+        .player-card {
+            background: #fff3e0;
+            border: 2px solid #D32F2F;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px auto;
+            width: 300px;
+            box-shadow: 2px 2px 12px rgba(0,0,0,0.2);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            background-color: #D32F2F;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #B71C1C;
+        }
+        .revealed-word {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #388E3C;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
+    <h1>🎄 Christmas Secret Word Game 🎄</h1>
+    <p>Press "Reveal" to see your secret word. Hand the phone to the next player after viewing!</p>
 
-<div class="card" id="setup">
-  <h2>Impostor Game</h2>
-  <p>Player names (comma separated)</p>
-  <input id="names" placeholder="Alex, Sam, Jordan">
-  <button onclick="startRound()">Start Round</button>
-</div>
+    <div id="player-section"></div>
 
-<div class="card hidden" id="reveal">
-  <h2 id="playerName"></h2>
-  <p id="roleText"></p>
-  <button onclick="nextPlayer()">Next</button>
-</div>
+    <button id="resetBtn">Reset Game</button>
 
-<div class="card hidden" id="done">
-  <h2>Round Ready</h2>
-  <p>Discuss and find the impostor!</p>
-  <button onclick="startRound()">Next Round</button>
-</div>
+    <footer>Created with festive cheer!</footer>
 
-<script>
-  const secretWords = [
-    "Beeba","Pierr","Dodo","Pola","Steven","Bavly","Leo","Baher",
-    "Petro","Teo","Doris","Jessy","Christine","Karol","Heaven",
-    "Tia","Maureen","Clara","Julie","Tutu","Ben","Nathalie",
-    "Buckets","Younan","Wella","Cyril M"
-  ];
+    <script>
+        const words = [
+            "Beeba","Pierr","Dodo","Pola","Steven","Bavly","Leo","Baher","Petro",
+            "Teo","Doris","Jessy","Christine","Karol","Heaven","Tia","Maureen",
+            "Clara","Julie","Tutu","Ben","Nathalie","Buckets","Younan","Wella","Cyril M","Soso"
+        ];
 
-  let players = [];
-  let impostorIndex = 0;
-  let currentPlayer = 0;
-  let currentWord = "";
+        let shuffledWords = [];
 
-  function startRound() {
-    if (players.length === 0) {
-      players = document.getElementById("names").value
-        .split(",")
-        .map(n => n.trim())
-        .filter(n => n);
+        function shuffleArray(array) {
+            let arr = array.slice();
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
 
-      if (players.length < 3) {
-        alert("Need at least 3 players");
-        return;
-      }
-    }
+        function createPlayers() {
+            shuffledWords = shuffleArray(words);
+            const section = document.getElementById("player-section");
+            section.innerHTML = "";
+            shuffledWords.forEach((word, index) => {
+                const card = document.createElement("div");
+                card.className = "player-card";
+                card.innerHTML = `
+                    <p>Player ${index + 1}</p>
+                    <button onclick="revealWord(this, '${word}')">Reveal</button>
+                    <div class="revealed-word" style="display:none;"></div>
+                `;
+                section.appendChild(card);
+            });
+        }
 
-    currentWord = secretWords[Math.floor(Math.random() * secretWords.length)];
-    impostorIndex = Math.floor(Math.random() * players.length);
-    currentPlayer = 0;
+        function revealWord(button, word) {
+            const wordDiv = button.nextElementSibling;
+            wordDiv.textContent = word;
+            wordDiv.style.display = "block";
+            button.disabled = true;
+        }
 
-    document.getElementById("setup").classList.add("hidden");
-    document.getElementById("done").classList.add("hidden");
-    document.getElementById("reveal").classList.remove("hidden");
+        document.getElementById("resetBtn").addEventListener("click", createPlayers);
 
-    showPlayer();
-  }
-
-  function showPlayer() {
-    document.getElementById("playerName").innerText = players[currentPlayer];
-
-    if (currentPlayer === impostorIndex) {
-      document.getElementById("roleText").innerText =
-        "You are the IMPOSTOR 🤫";
-    } else {
-      document.getElementById("roleText").innerText =
-        "The word is: " + currentWord;
-    }
-  }
-
-  function nextPlayer() {
-    currentPlayer++;
-    if (currentPlayer >= players.length) {
-      document.getElementById("reveal").classList.add("hidden");
-      document.getElementById("done").classList.remove("hidden");
-    } else {
-      showPlayer();
-    }
-  }
-</script>
-
+        // Initialize game
+        createPlayers();
+    </script>
 </body>
 </html>
